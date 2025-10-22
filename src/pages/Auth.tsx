@@ -93,9 +93,6 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-warm text-white font-bold text-xl shadow-warm">
-            MDL
-          </div>
           <h1 className="text-3xl font-bold mb-2">Welcome to MyDailyLog</h1>
           <p className="text-muted-foreground">Your personal journaling space</p>
         </div>
@@ -139,7 +136,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-warm shadow-warm hover:opacity-90 transition-opacity" 
+                    className="w-full bg-gradient-primary shadow-primary hover:opacity-90 transition-opacity" 
                     disabled={loading}
                   >
                     {loading ? "Signing in..." : "Sign In"}
@@ -182,7 +179,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-warm shadow-warm hover:opacity-90 transition-opacity" 
+                    className="w-full bg-gradient-primary shadow-primary hover:opacity-90 transition-opacity" 
                     disabled={loading}
                   >
                     {loading ? "Creating account..." : "Create Account"}

@@ -32,10 +32,7 @@ const Index = () => {
       {/* Header */}
       <header className="border-b border-border/50 bg-background/50 backdrop-blur-sm">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-warm text-white font-bold text-lg shadow-warm">
-              MDL
-            </div>
+          <div>
             <span className="text-xl font-bold">MyDailyLog</span>
           </div>
           <Button onClick={() => navigate("/auth")} variant="outline" size="sm">
@@ -53,7 +50,7 @@ const Index = () => {
           </div>
           <h1 className="mb-6 text-5xl font-bold leading-tight md:text-6xl">
             Capture Your
-            <span className="bg-gradient-warm bg-clip-text text-transparent"> Daily Moments</span>
+            <span className="bg-gradient-primary bg-clip-text text-transparent"> Daily Moments</span>
           </h1>
           <p className="mb-8 text-lg text-muted-foreground md:text-xl">
             A beautiful, secure space for your thoughts. Write, reflect, and revisit your journey with MyDailyLog.
@@ -62,7 +59,7 @@ const Index = () => {
             <Button 
               onClick={() => navigate("/auth")} 
               size="lg" 
-              className="bg-gradient-warm shadow-warm hover:opacity-90 transition-opacity"
+              className="bg-gradient-primary shadow-primary hover:opacity-90 transition-opacity"
             >
               Get Started Free
             </Button>
@@ -110,8 +107,8 @@ const Index = () => {
 };
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
-  <div className="rounded-xl bg-card p-6 shadow-soft transition-all hover:shadow-warm">
-    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-warm text-white">
+  <div className="rounded-xl bg-card p-6 shadow-soft transition-all hover:shadow-primary">
+    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-primary text-white">
       {icon}
     </div>
     <h3 className="mb-2 text-lg font-semibold">{title}</h3>

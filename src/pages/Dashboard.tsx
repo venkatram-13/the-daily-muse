@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import DiaryEditor from "@/components/DiaryEditor";
-import EntryList from "@/components/EntryList";
+import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    searchParams.get("date") || new Date().toISOString().split("T")[0]
   );
 
   useEffect(() => {
@@ -48,6 +50,14 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
+  // Update selected date when URL changes
+  useEffect(() => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      setSelectedDate(dateParam);
+    }
+  }, [searchParams]);
+
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -81,24 +91,27 @@ const Dashboard = () => {
       <Header user={user} onSignOut={handleSignOut} />
       
       <main className="container mx-auto px-6 py-8">
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Main Editor */}
-          <div className="lg:col-span-2">
-            <DiaryEditor 
-              userId={user.id} 
-              selectedDate={selectedDate} 
-              onDateChange={setSelectedDate}
-            />
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Today's Entry</h2>
+            <p className="text-sm text-muted-foreground">Write your thoughts for today</p>
           </div>
+          <Button
+            onClick={() => navigate("/starred")}
+            variant="outline"
+            className="gap-2"
+          >
+            <Star className="h-4 w-4" />
+            Starred Entries
+          </Button>
+        </div>
 
-          {/* Past Entries Sidebar */}
-          <div className="lg:col-span-1">
-            <EntryList 
-              userId={user.id} 
-              selectedDate={selectedDate}
-              onSelectDate={setSelectedDate}
-            />
-          </div>
+        <div className="mx-auto max-w-4xl">
+          <DiaryEditor 
+            userId={user.id} 
+            selectedDate={selectedDate} 
+            onDateChange={setSelectedDate}
+          />
         </div>
       </main>
     </div>

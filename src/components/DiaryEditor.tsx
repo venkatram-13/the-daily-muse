@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Star } from "lucide-react";
+import { DatePicker } from "@/components/DatePicker";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -19,6 +20,7 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [entryId, setEntryId] = useState<string | null>(null);
+  const [starred, setStarred] = useState(false);
   const quillRef = useRef<ReactQuill>(null);
 
   // Load entry for selected date
@@ -41,9 +43,11 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
       if (data) {
         setContent(data.content);
         setEntryId(data.id);
+        setStarred(data.starred || false);
       } else {
         setContent("");
         setEntryId(null);
+        setStarred(false);
       }
     } catch (error: any) {
       toast({
@@ -72,7 +76,7 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
         // Update existing entry
         const { error } = await supabase
           .from("diary_entries")
-          .update({ content, updated_at: new Date().toISOString() })
+          .update({ content, starred, updated_at: new Date().toISOString() })
           .eq("id", entryId);
 
         if (error) throw error;
@@ -84,6 +88,7 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
             user_id: userId,
             entry_date: selectedDate,
             content,
+            starred,
           })
           .select()
           .single();
@@ -107,14 +112,46 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + "T00:00:00");
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  const toggleStar = async () => {
+    if (!entryId) {
+      toast({
+        title: "Save first",
+        description: "Please save your entry before starring it",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newStarred = !starred;
+    setStarred(newStarred);
+
+    try {
+      const { error } = await supabase
+        .from("diary_entries")
+        .update({ starred: newStarred })
+        .eq("id", entryId);
+
+      if (error) throw error;
+
+      toast({
+        title: newStarred ? "Starred!" : "Unstarred",
+        description: newStarred
+          ? "Entry added to your favorites"
+          : "Entry removed from favorites",
+      });
+    } catch (error: any) {
+      setStarred(!newStarred); // Revert on error
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update star status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDateChange = (date: Date) => {
+    const dateString = date.toISOString().split("T")[0];
+    onDateChange(dateString);
   };
 
   const modules = {
@@ -131,23 +168,28 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
   return (
     <Card className="shadow-soft">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            {formatDate(selectedDate)}
+            <DatePicker
+              date={new Date(selectedDate + "T00:00:00")}
+              onDateChange={handleDateChange}
+            />
           </CardTitle>
           <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => onDateChange(e.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
+            <Button
+              onClick={toggleStar}
+              disabled={!entryId}
+              variant={starred ? "default" : "outline"}
+              size="sm"
+              className={starred ? "bg-gradient-primary shadow-primary" : ""}
+            >
+              <Star className={`h-4 w-4 ${starred ? "fill-current" : ""}`} />
+            </Button>
             <Button
               onClick={saveEntry}
               disabled={saving || loading}
               size="sm"
-              className="bg-gradient-warm shadow-warm hover:opacity-90 transition-opacity"
+              className="bg-gradient-primary shadow-primary hover:opacity-90 transition-opacity"
             >
               {saving ? (
                 <>

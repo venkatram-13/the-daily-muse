@@ -30,21 +30,16 @@ const Header = ({ user, onSignOut }: HeaderProps) => {
   return (
     <header className="border-b border-border/50 bg-background/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-warm text-white font-bold text-lg shadow-warm">
-            MDL
-          </div>
-          <div>
-            <h1 className="text-xl font-bold">MyDailyLog</h1>
-            <p className="text-xs text-muted-foreground">Your personal journal</p>
-          </div>
+        <div>
+          <h1 className="text-xl font-bold">MyDailyLog</h1>
+          <p className="text-xs text-muted-foreground">Your personal journal</p>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar>
-                <AvatarFallback className="bg-gradient-warm text-white font-semibold">
+                <AvatarFallback className="bg-gradient-primary text-white font-semibold">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>

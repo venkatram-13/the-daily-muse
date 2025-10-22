@@ -50,11 +50,11 @@ export default {
         },
       },
       backgroundImage: {
-        'gradient-warm': 'var(--gradient-warm)',
+        'gradient-primary': 'var(--gradient-primary)',
         'gradient-soft': 'var(--gradient-soft)',
       },
       boxShadow: {
-        'warm': 'var(--shadow-warm)',
+        'primary': 'var(--shadow-primary)',
         'soft': 'var(--shadow-soft)',
       },
       borderRadius: {
