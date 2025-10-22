@@ -7,6 +7,7 @@ import { Save, Loader2, Star } from "lucide-react";
 import { DatePicker } from "@/components/DatePicker";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { toLocalISOString } from "@/lib/date-utils";
 
 interface DiaryEditorProps {
   userId: string;
@@ -150,8 +151,7 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
   };
 
   const handleDateChange = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0];
-    onDateChange(dateString);
+    onDateChange(toLocalISOString(date));
   };
 
   const modules = {
@@ -206,23 +206,20 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="editor-container">
         {loading ? (
           <div className="flex h-96 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="min-h-[400px]">
-            <ReactQuill
-              ref={quillRef}
-              theme="snow"
-              value={content}
-              onChange={setContent}
-              modules={modules}
-              placeholder="What's on your mind today?"
-              className="h-96"
-            />
-          </div>
+          <ReactQuill
+            ref={quillRef}
+            theme="snow"
+            value={content}
+            onChange={setContent}
+            modules={modules}
+            placeholder="What's on your mind today?"
+          />
         )}
       </CardContent>
     </Card>

@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import DiaryEditor from "@/components/DiaryEditor";
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
+import { toLocalISOString } from "@/lib/date-utils";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>(
-    searchParams.get("date") || new Date().toISOString().split("T")[0]
+    searchParams.get("date") || toLocalISOString(new Date())
   );
 
   useEffect(() => {
