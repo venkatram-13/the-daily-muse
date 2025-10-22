@@ -8,6 +8,8 @@ import DiaryEditor from "@/components/DiaryEditor";
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { toLocalISOString } from "@/lib/date-utils";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,12 +20,15 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState<string>(
     searchParams.get("date") || toLocalISOString(new Date())
   );
+  const [showRuledLines, setShowRuledLines] = useState(true);
 
   useEffect(() => {
     // Check auth state
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         navigate("/auth");
         return;
@@ -36,15 +41,15 @@ const Dashboard = () => {
     checkAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_OUT" || !session) {
-          navigate("/auth");
-        } else {
-          setUser(session.user);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
       }
-    );
+    });
 
     return () => {
       subscription.unsubscribe();
@@ -90,28 +95,41 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-soft">
       <Header user={user} onSignOut={handleSignOut} />
-      
+
       <main className="container mx-auto px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold">Today's Entry</h2>
-            <p className="text-sm text-muted-foreground">Write your thoughts for today</p>
+            <p className="text-sm text-muted-foreground">
+              Write your thoughts for today
+            </p>
           </div>
-          <Button
-            onClick={() => navigate("/starred")}
-            variant="outline"
-            className="gap-2"
-          >
-            <Star className="h-4 w-4" />
-            Starred Entries
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="ruled-lines"
+                checked={showRuledLines}
+                onCheckedChange={() => setShowRuledLines(!showRuledLines)}
+              />
+              <Label htmlFor="ruled-lines">Ruled Lines</Label>
+            </div>
+            <Button
+              onClick={() => navigate("/starred")}
+              variant="outline"
+              className="gap-2"
+            >
+              <Star className="h-4 w-4" />
+              Starred Entries
+            </Button>
+          </div>
         </div>
 
         <div className="mx-auto max-w-4xl">
-          <DiaryEditor 
-            userId={user.id} 
-            selectedDate={selectedDate} 
+          <DiaryEditor
+            userId={user.id}
+            selectedDate={selectedDate}
             onDateChange={setSelectedDate}
+            showRuledLines={showRuledLines}
           />
         </div>
       </main>

@@ -13,9 +13,15 @@ interface DiaryEditorProps {
   userId: string;
   selectedDate: string;
   onDateChange: (date: string) => void;
+  showRuledLines: boolean;
 }
 
-const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) => {
+const DiaryEditor = ({
+  userId,
+  selectedDate,
+  onDateChange,
+  showRuledLines,
+}: DiaryEditorProps) => {
   const { toast } = useToast();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -206,7 +212,9 @@ const DiaryEditor = ({ userId, selectedDate, onDateChange }: DiaryEditorProps) =
           </div>
         </div>
       </CardHeader>
-      <CardContent className="editor-container">
+      <CardContent
+        className={`editor-container ${showRuledLines ? "ruled-lines" : ""}`}
+      >
         {loading ? (
           <div className="flex h-96 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

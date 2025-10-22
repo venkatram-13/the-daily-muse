@@ -10,9 +10,18 @@
   border-top-right-radius: 0.5rem;
 }
 
-.editor-container .ql-editor {
-  background-attachment: local;
-  background-image: linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
-  background-size: 100% 1.5em;
-  line-height: 1.5em;
+.editor-container.ruled-lines .ql-editor {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  background-image: linear-gradient(hsl(var(--border)) 1px, transparent 1px);
+  background-size: 100% 1.5rem;
+  line-height: 1.5rem;
+  font-size: 16px;
+  background-position-y: 5px;
+  padding-top: 5px;
+}
+
+.editor-container.ruled-lines .ql-editor p {
+  margin: 0;
+  line-height: 1.5rem;
 }
