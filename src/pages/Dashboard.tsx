@@ -6,10 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import DiaryEditor from "@/components/DiaryEditor";
 import { Button } from "@/components/ui/button";
-import { Star, Pencil, Book, List } from "lucide-react";
+import { Star, Pencil, List } from "lucide-react";
 import { toLocalISOString } from "@/lib/date-utils";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { TodoList } from "../components/TodoList";
 import { Switch } from "@/components/ui/switch";
 
@@ -22,7 +21,6 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState<string>(
     searchParams.get("date") || toLocalISOString(new Date())
   );
-  const [showRuledLines, setShowRuledLines] = useState(true);
   const [showTodoList, setShowTodoList] = useState(false);
 
   useEffect(() => {
@@ -109,14 +107,6 @@ const Dashboard = () => {
               />
               <Label htmlFor="view-toggle">Show Todo List</Label>
             </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="ruled-lines"
-                checked={showRuledLines}
-                onCheckedChange={() => setShowRuledLines(!showRuledLines)}
-              />
-              <Label htmlFor="ruled-lines">Ruled Lines</Label>
-            </div>
             <Button
               onClick={() => navigate("/starred")}
               variant="outline"
@@ -136,7 +126,6 @@ const Dashboard = () => {
               userId={user.uid}
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
-              showRuledLines={showRuledLines}
             />
           )}
         </div>
