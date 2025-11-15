@@ -33,7 +33,7 @@ const Index = () => {
       <header className="border-b border-border/50 bg-background/50 backdrop-blur-sm">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
-            <NotebookPen className="h-6 w-6 text-primary" />
+            <img src="/logo.png" alt="MyDailyLog Logo" className="h-8 w-8" />
             <span className="text-xl font-bold">MyDailyLog</span>
           </div>
           <Button onClick={() => navigate("/auth")} variant="outline" size="sm">
