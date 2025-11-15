@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { auth, db } from "@/integrations/firebase/client";
+import { User, onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Calendar, ArrowLeft } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface StarredEntry {
   id: string;
-  entry_date: string;
+  entryDate: string;
   content: string;
-  created_at: string;
 }
 
 const StarredEntries = () => {
@@ -24,47 +23,35 @@ const StarredEntries = () => {
   const [entries, setEntries] = useState<StarredEntry[]>([]);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        loadStarredEntries(user.uid);
+      } else {
         navigate("/auth");
-        return;
       }
+    });
 
-      setUser(session.user);
-      loadStarredEntries(session.user.id);
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_OUT" || !session) {
-          navigate("/auth");
-        } else {
-          setUser(session.user);
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => unsubscribe();
   }, [navigate]);
 
   const loadStarredEntries = async (userId: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("diary_entries")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("starred", true)
-        .order("entry_date", { ascending: false });
+      const q = query(
+        collection(db, "users", userId, "diary_entries"),
+        where("starred", "==", true)
+      );
+      const querySnapshot = await getDocs(q);
+      const starredEntries = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<StarredEntry, 'id'>),
+      }));
+      
+      // Sort entries by date on the client-side
+      starredEntries.sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
 
-      if (error) throw error;
-      setEntries(data || []);
+      setEntries(starredEntries);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -78,11 +65,12 @@ const StarredEntries = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut(auth);
       toast({
         title: "Signed out",
         description: "Come back soon!",
       });
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -131,14 +119,14 @@ const StarredEntries = () => {
       
       <main className="container mx-auto px-6 py-8">
         <div className="mb-6">
-          <Button
+          {/* <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
-          </Button>
+          </Button> */}
           
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary text-white shadow-primary">
@@ -174,13 +162,13 @@ const StarredEntries = () => {
                 <Card
                   key={entry.id}
                   className="shadow-soft transition-all hover:shadow-primary cursor-pointer"
-                  onClick={() => viewEntry(entry.entry_date)}
+                  onClick={() => viewEntry(entry.entryDate)}
                 >
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-5 w-5 text-primary" />
-                        <span>{formatDate(entry.entry_date)}</span>
+                        <span>{formatDate(entry.entryDate)}</span>
                       </div>
                       <Star className="h-5 w-5 fill-primary text-primary" />
                     </CardTitle>

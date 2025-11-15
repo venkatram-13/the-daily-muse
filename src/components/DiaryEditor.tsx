@@ -1,5 +1,16 @@
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/firebase/client";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+  addDoc,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,19 +49,17 @@ const DiaryEditor = ({
   const loadEntry = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("diary_entries")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("entry_date", selectedDate)
-        .maybeSingle();
+      const q = query(
+        collection(db, "users", userId, "diary_entries"),
+        where("entryDate", "==", selectedDate)
+      );
+      const querySnapshot = await getDocs(q);
 
-      if (error) throw error;
-
-      if (data) {
-        setContent(data.content);
-        setEntryId(data.id);
-        setStarred(data.starred || false);
+      if (!querySnapshot.empty) {
+        const entryDoc = querySnapshot.docs[0];
+        setContent(entryDoc.data().content);
+        setEntryId(entryDoc.id);
+        setStarred(entryDoc.data().starred || false);
       } else {
         setContent("");
         setEntryId(null);
@@ -81,27 +90,21 @@ const DiaryEditor = ({
     try {
       if (entryId) {
         // Update existing entry
-        const { error } = await supabase
-          .from("diary_entries")
-          .update({ content, starred, updated_at: new Date().toISOString() })
-          .eq("id", entryId);
-
-        if (error) throw error;
+        const entryRef = doc(db, "users", userId, "diary_entries", entryId);
+        await updateDoc(entryRef, {
+          content,
+          starred,
+          updatedAt: serverTimestamp(),
+        });
       } else {
         // Create new entry
-        const { data, error } = await supabase
-          .from("diary_entries")
-          .insert({
-            user_id: userId,
-            entry_date: selectedDate,
-            content,
-            starred,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (data) setEntryId(data.id);
+        const docRef = await addDoc(collection(db, "users", userId, "diary_entries"), {
+          entryDate: selectedDate,
+          content,
+          starred,
+          createdAt: serverTimestamp(),
+        });
+        setEntryId(docRef.id);
       }
 
       toast({
@@ -133,12 +136,8 @@ const DiaryEditor = ({
     setStarred(newStarred);
 
     try {
-      const { error } = await supabase
-        .from("diary_entries")
-        .update({ starred: newStarred })
-        .eq("id", entryId);
-
-      if (error) throw error;
+      const entryRef = doc(db, "users", userId, "diary_entries", entryId);
+      await updateDoc(entryRef, { starred: newStarred });
 
       toast({
         title: newStarred ? "Starred!" : "Unstarred",

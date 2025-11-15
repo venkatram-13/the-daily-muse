@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/integrations/firebase/client";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,20 +25,14 @@ const Auth = () => {
     const fullName = formData.get("full-name") as string;
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      if (error) throw error;
+      if (user) {
+        await updateProfile(user, {
+          displayName: fullName,
+        });
 
-      if (data.user) {
         toast({
           title: "Account created!",
           description: "Welcome to MyDailyLog. Let's start journaling!",
@@ -64,14 +59,9 @@ const Auth = () => {
     const password = formData.get("signin-password") as string;
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
 
-      if (error) throw error;
-
-      if (data.user) {
+      if (user) {
         toast({
           title: "Welcome back!",
           description: "Successfully signed in.",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { auth } from "@/integrations/firebase/client";
+import { User, onAuthStateChanged, signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import DiaryEditor from "@/components/DiaryEditor";
@@ -23,40 +23,18 @@ const Dashboard = () => {
   const [showRuledLines, setShowRuledLines] = useState(true);
 
   useEffect(() => {
-    // Check auth state
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-
-      setUser(session.user);
-      setLoading(false);
-    };
-
-    checkAuth();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
-        navigate("/auth");
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
       } else {
-        setUser(session.user);
+        navigate("/auth");
       }
+      setLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => unsubscribe();
   }, [navigate]);
 
-  // Update selected date when URL changes
   useEffect(() => {
     const dateParam = searchParams.get("date");
     if (dateParam) {
@@ -66,11 +44,12 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut(auth);
       toast({
         title: "Signed out",
         description: "Come back soon!",
       });
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -126,7 +105,7 @@ const Dashboard = () => {
 
         <div className="mx-auto max-w-4xl">
           <DiaryEditor
-            userId={user.id}
+            userId={user.uid}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
             showRuledLines={showRuledLines}

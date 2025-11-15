@@ -1,4 +1,4 @@
-import { User } from "@supabase/supabase-js";
+import { User } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, NotebookPen } from "lucide-react";
@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
   user: User;
@@ -18,7 +19,7 @@ interface HeaderProps {
 
 const Header = ({ user, onSignOut }: HeaderProps) => {
   const getInitials = () => {
-    const name = user.user_metadata?.full_name || user.email || "U";
+    const name = user.displayName || user.email || "U";
     return name
       .split(" ")
       .map((n: string) => n[0])
@@ -30,13 +31,13 @@ const Header = ({ user, onSignOut }: HeaderProps) => {
   return (
     <header className="border-b border-border/50 bg-background/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
+        <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
           <NotebookPen className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-xl font-bold">MyDailyLog</h1>
             <p className="text-xs text-muted-foreground">Your personal journal</p>
           </div>
-        </div>
+        </Link>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -52,7 +53,7 @@ const Header = ({ user, onSignOut }: HeaderProps) => {
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium">
-                  {user.user_metadata?.full_name || "User"}
+                  {user.displayName || "User"}
                 </p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>

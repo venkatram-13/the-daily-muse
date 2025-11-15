@@ -1,0 +1,18 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "diary_entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "starred",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "entryDate",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ]
+}

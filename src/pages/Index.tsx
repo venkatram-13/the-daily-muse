@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/integrations/firebase/client";
+import { onAuthStateChanged } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Lock, Calendar, Shield, NotebookPen } from "lucide-react";
 
@@ -9,14 +10,13 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
         navigate("/dashboard");
       }
       setLoading(false);
-    };
-    checkAuth();
+    });
+    return () => unsubscribe();
   }, [navigate]);
 
   if (loading) {
