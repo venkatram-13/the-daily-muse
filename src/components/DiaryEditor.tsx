@@ -9,7 +9,6 @@ import {
   updateDoc,
   addDoc,
   serverTimestamp,
-  setDoc,
 } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,14 +23,12 @@ interface DiaryEditorProps {
   userId: string;
   selectedDate: string;
   onDateChange: (date: string) => void;
-  showRuledLines: boolean;
 }
 
 const DiaryEditor = ({
   userId,
   selectedDate,
   onDateChange,
-  showRuledLines,
 }: DiaryEditorProps) => {
   const { toast } = useToast();
   const [content, setContent] = useState("");
@@ -210,9 +207,7 @@ const DiaryEditor = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent
-        className={`editor-container ${showRuledLines ? "ruled-lines" : ""}`}
-      >
+      <CardContent className="editor-container">
         {loading ? (
           <div className="flex h-96 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
