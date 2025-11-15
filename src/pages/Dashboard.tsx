@@ -78,8 +78,8 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-soft">
       <Header user={user} onSignOut={handleSignOut} />
 
-      <main className="container mx-auto px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="container mx-auto px-4 sm:px-6 py-8">
+        <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold flex items-center">
               {showTodoList ? (
@@ -100,7 +100,7 @@ const Dashboard = () => {
                 : "Write your thoughts for today"}
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Switch
                 id="view-toggle"

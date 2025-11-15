@@ -173,7 +173,7 @@ const DiaryEditor = ({
   return (
     <Card className="shadow-soft">
       <CardHeader>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <CardTitle className="flex items-center gap-2">
             <DatePicker
               date={new Date(selectedDate + "T00:00:00")}
@@ -186,15 +186,14 @@ const DiaryEditor = ({
               disabled={!entryId}
               variant={starred ? "default" : "outline"}
               size="sm"
-              className={starred ? "bg-gradient-primary shadow-primary" : ""}
-            >
+              className={`w-full sm:w-auto ${starred ? "bg-gradient-primary shadow-primary" : ""}`}>
               <Star className={`h-4 w-4 ${starred ? "fill-current" : ""}`} />
             </Button>
             <Button
               onClick={saveEntry}
               disabled={saving || loading}
               size="sm"
-              className="bg-gradient-primary shadow-primary hover:opacity-90 transition-opacity"
+              className="w-full sm:w-auto bg-gradient-primary shadow-primary hover:opacity-90 transition-opacity"
             >
               {saving ? (
                 <>
