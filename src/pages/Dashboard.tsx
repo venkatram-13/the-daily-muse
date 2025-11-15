@@ -6,10 +6,12 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import DiaryEditor from "@/components/DiaryEditor";
 import { Button } from "@/components/ui/button";
-import { Star } from "lucide-react";
+import { Star, Pencil, Book, List } from "lucide-react";
 import { toLocalISOString } from "@/lib/date-utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { TodoList } from "../components/TodoList";
+import { Switch } from "@/components/ui/switch";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const Dashboard = () => {
     searchParams.get("date") || toLocalISOString(new Date())
   );
   const [showRuledLines, setShowRuledLines] = useState(true);
+  const [showTodoList, setShowTodoList] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -78,12 +81,34 @@ const Dashboard = () => {
       <main className="container mx-auto px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">Today's Entry</h2>
+            <h2 className="text-2xl font-bold flex items-center">
+              {showTodoList ? (
+                <>
+                  <List className="mr-2 text-blue-500" />
+                  Todo List
+                </>
+              ) : (
+                <>
+                  <Pencil className="mr-2 text-blue-500" />
+                  Today's Entry
+                </>
+              )}
+            </h2>
             <p className="text-sm text-muted-foreground">
-              Write your thoughts for today
+              {showTodoList
+                ? "Manage your tasks"
+                : "Write your thoughts for today"}
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="view-toggle"
+                checked={showTodoList}
+                onCheckedChange={setShowTodoList}
+              />
+              <Label htmlFor="view-toggle">Show Todo List</Label>
+            </div>
             <div className="flex items-center gap-2">
               <Checkbox
                 id="ruled-lines"
@@ -104,12 +129,16 @@ const Dashboard = () => {
         </div>
 
         <div className="mx-auto max-w-4xl">
-          <DiaryEditor
-            userId={user.uid}
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
-            showRuledLines={showRuledLines}
-          />
+          {showTodoList ? (
+            <TodoList user={user} />
+          ) : (
+            <DiaryEditor
+              userId={user.uid}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              showRuledLines={showRuledLines}
+            />
+          )}
         </div>
       </main>
     </div>
