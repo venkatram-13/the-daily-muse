@@ -1,7 +1,7 @@
 import { User } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, NotebookPen } from "lucide-react";
+import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,10 +32,10 @@ const Header = ({ user, onSignOut }: HeaderProps) => {
     <header className="border-b border-border/50 bg-background/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
-          <NotebookPen className="h-6 w-6 text-primary" />
+          <img src="/logo.png" alt="MyDailyLog Logo" className="h-8 w-8" />
           <div>
             <h1 className="text-xl font-bold">MyDailyLog</h1>
-            <p className="text-xs text-muted-foreground">Your personal journal</p>
+            <p className="text-xs text-muted-foreground">Everyday Captured</p>
           </div>
         </Link>
 
