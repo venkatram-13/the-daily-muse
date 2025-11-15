@@ -15,6 +15,7 @@ import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Trash2 } from "lucide-react";
+import { Separator } from "./ui/separator";
 
 interface Todo {
   id: string;
@@ -69,6 +70,9 @@ export const TodoList = ({ user }: TodoListProps) => {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
+  const incompleteTodos = todos.filter((todo) => !todo.completed);
+  const completedTodos = todos.filter((todo) => todo.completed);
+
   return (
     <Card className="shadow-soft">
       <CardHeader>
@@ -83,28 +87,62 @@ export const TodoList = ({ user }: TodoListProps) => {
           />
           <Button onClick={addTodo}>Add</Button>
         </div>
-        <ul>
-          {todos.map((todo) => (
-            <li key={todo.id} className="flex items-center gap-2 mb-2">
-              <Checkbox
-                checked={todo.completed}
-                onCheckedChange={() => toggleTodo(todo.id, todo.completed)}
-              />
-              <span
-                className={todo.completed ? "line-through text-muted-foreground" : ""}
-              >
-                {todo.text}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeTodo(todo.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <div>
+          <ul>
+            {incompleteTodos.map((todo) => (
+              <li key={todo.id} className="flex items-center gap-2 mb-2">
+                <Checkbox
+                  checked={todo.completed}
+                  onCheckedChange={() => toggleTodo(todo.id, todo.completed)}
+                />
+                <span
+                  className={
+                    todo.completed ? "line-through text-muted-foreground" : ""
+                  }
+                >
+                  {todo.text}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeTodo(todo.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {completedTodos.length > 0 && (
+          <div className="mt-4">
+            <Separator />
+            <h3 className="text-lg font-semibold my-2">Completed</h3>
+            <ul>
+              {completedTodos.map((todo) => (
+                <li key={todo.id} className="flex items-center gap-2 mb-2">
+                  <Checkbox
+                    checked={todo.completed}
+                    onCheckedChange={() => toggleTodo(todo.id, todo.completed)}
+                  />
+                  <span
+                    className={
+                      todo.completed ? "line-through text-muted-foreground" : ""
+                    }
+                  >
+                    {todo.text}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeTodo(todo.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
