@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Calendar, ArrowLeft } from "lucide-react";
+import { xorCipher } from "@/lib/cipher";
 
 interface StarredEntry {
   id: string;
@@ -43,15 +44,19 @@ const StarredEntries = () => {
         where("starred", "==", true)
       );
       const querySnapshot = await getDocs(q);
-      const starredEntries = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<StarredEntry, 'id'>),
-      }));
+      const starredEntries = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          entryDate: data.entryDate,
+          content: xorCipher(data.content),
+        };
+      });
       
       // Sort entries by date on the client-side
       starredEntries.sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
 
-      setEntries(starredEntries);
+      setEntries(starredEntries as StarredEntry[]);
     } catch (error: any) {
       toast({
         title: "Error",

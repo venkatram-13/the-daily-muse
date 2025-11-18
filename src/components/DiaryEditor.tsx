@@ -18,6 +18,8 @@ import { DatePicker } from "@/components/DatePicker";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { toLocalISOString } from "@/lib/date-utils";
+import { xorCipher } from "@/lib/cipher";
+import { UnsavedChangesDialog } from "@/components/UnsavedChangesDialog";
 
 interface DiaryEditorProps {
   userId: string;
@@ -32,16 +34,37 @@ const DiaryEditor = ({
 }: DiaryEditorProps) => {
   const { toast } = useToast();
   const [content, setContent] = useState("");
+  const [originalContent, setOriginalContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [entryId, setEntryId] = useState<string | null>(null);
   const [starred, setStarred] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [nextDate, setNextDate] = useState<string | null>(null);
   const quillRef = useRef<ReactQuill>(null);
 
-  // Load entry for selected date
   useEffect(() => {
     loadEntry();
   }, [selectedDate, userId]);
+
+  useEffect(() => {
+    setIsDirty(content !== originalContent);
+  }, [content, originalContent]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
 
   const loadEntry = async () => {
     setLoading(true);
@@ -54,11 +77,14 @@ const DiaryEditor = ({
 
       if (!querySnapshot.empty) {
         const entryDoc = querySnapshot.docs[0];
-        setContent(entryDoc.data().content);
+        const decryptedContent = xorCipher(entryDoc.data().content);
+        setContent(decryptedContent);
+        setOriginalContent(decryptedContent);
         setEntryId(entryDoc.id);
         setStarred(entryDoc.data().starred || false);
       } else {
         setContent("");
+        setOriginalContent("");
         setEntryId(null);
         setStarred(false);
       }
@@ -85,40 +111,75 @@ const DiaryEditor = ({
 
     setSaving(true);
     try {
+      const encryptedContent = xorCipher(content);
       if (entryId) {
-        // Update existing entry
         const entryRef = doc(db, "users", userId, "diary_entries", entryId);
         await updateDoc(entryRef, {
-          content,
+          content: encryptedContent,
           starred,
           updatedAt: serverTimestamp(),
         });
       } else {
-        // Create new entry
-        const docRef = await addDoc(collection(db, "users", userId, "diary_entries"), {
-          entryDate: selectedDate,
-          content,
-          starred,
-          createdAt: serverTimestamp(),
-        });
+        const docRef = await addDoc(
+          collection(db, "users", userId, "diary_entries"),
+          {
+            entryDate: selectedDate,
+            content: encryptedContent,
+            starred,
+            createdAt: serverTimestamp(),
+          }
+        );
         setEntryId(docRef.id);
       }
 
+      setOriginalContent(content);
+      setIsDirty(false);
       toast({
         title: "Saved!",
         description: "Your entry has been saved successfully.",
       });
+      return true; // Indicate success
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to save entry",
         variant: "destructive",
       });
+      return false; // Indicate failure
     } finally {
       setSaving(false);
     }
   };
 
+  const handleDateChange = (date: Date) => {
+    const newDate = toLocalISOString(date);
+    if (isDirty) {
+      setNextDate(newDate);
+      setShowUnsavedDialog(true);
+    } else {
+      onDateChange(newDate);
+    }
+  };
+
+  const handleSaveAndNavigate = async () => {
+    const success = await saveEntry();
+    if (success && nextDate) {
+      onDateChange(nextDate);
+      setNextDate(null);
+    }
+    setShowUnsavedDialog(false);
+  };
+
+  const handleDiscardAndNavigate = () => {
+    if (nextDate) {
+      setContent(originalContent);
+      onDateChange(nextDate);
+      setNextDate(null);
+    }
+    setShowUnsavedDialog(false);
+    setIsDirty(false);
+  };
+  
   const toggleStar = async () => {
     if (!entryId) {
       toast({
@@ -152,9 +213,6 @@ const DiaryEditor = ({
     }
   };
 
-  const handleDateChange = (date: Date) => {
-    onDateChange(toLocalISOString(date));
-  };
 
   const modules = {
     toolbar: [
@@ -169,6 +227,12 @@ const DiaryEditor = ({
 
   return (
     <Card className="shadow-soft">
+       <UnsavedChangesDialog
+        isOpen={showUnsavedDialog}
+        onSave={handleSaveAndNavigate}
+        onDiscard={handleDiscardAndNavigate}
+        onClose={() => setShowUnsavedDialog(false)}
+      />
       <CardHeader>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <CardTitle className="flex items-center gap-2">
